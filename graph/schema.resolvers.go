@@ -11,14 +11,21 @@ import (
 	"github.com/Thyriion/fokus-app/graph/model"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+// CreateFocusarea is the resolver for the createFocusarea field.
+func (r *mutationResolver) CreateFocusarea(ctx context.Context, name string, deadline *string) (*model.Focusarea, error) {
+	newFocusarea := &model.Focusarea{
+		ID:       fmt.Sprintf("focusarea-%d", len(r.focusareas)+1),
+		Name:     name,
+		Deadline: deadline,
+	}
+
+	r.focusareas = append(r.focusareas, newFocusarea)
+	return newFocusarea, nil
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+// Focusarea is the resolver for the focusarea field.
+func (r *queryResolver) Focusarea(ctx context.Context) ([]*model.Focusarea, error) {
+	return r.focusareas, nil
 }
 
 // Mutation returns MutationResolver implementation.
@@ -29,3 +36,18 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+}
+func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+	panic(fmt.Errorf("not implemented: Todos - todos"))
+}
+*/

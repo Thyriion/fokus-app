@@ -1,0 +1,7 @@
+# Handle line endings automatically
+* text=auto
+
+# Go and GraphQL files: use LF
+*.go text eol=lf
+*.graphqls text eol=lf
+*.yml text eol=lf
