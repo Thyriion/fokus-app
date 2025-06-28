@@ -6,72 +6,32 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"fokus-app/graph/model"
-	"time"
 )
 
 // CreateFocusarea is the resolver for the createFocusarea field.
 func (r *mutationResolver) CreateFocusarea(ctx context.Context, name string, deadline *string) (*model.Focusarea, error) {
-	newFocusarea := &model.Focusarea{
-		ID:       fmt.Sprintf("focusarea-%d", len(r.focusareas)+1),
-		Name:     name,
-		Deadline: deadline,
-	}
-
-	r.focusareas = append(r.focusareas, newFocusarea)
-	return newFocusarea, nil
+	return r.Resolver.focusareaService.CreateFocusarea(name, deadline)
 }
 
 // StartSession is the resolver for the startSession field.
 func (r *mutationResolver) StartSession(ctx context.Context, focusareaID string) (*model.Session, error) {
-	newSession := &model.Session{
-		ID:              fmt.Sprintf("session-%d", len(r.sessions)+1),
-		FocusareaID:     focusareaID,
-		Start:           time.Now().Format(time.RFC3339),
-		End:             nil,
-		DurationMinutes: nil,
-	}
-
-	r.sessions = append(r.sessions, newSession)
-	return newSession, nil
+	return r.Resolver.sessionService.CreateSession(focusareaID)
 }
 
 // StopSession is the resolver for the stopSession field.
 func (r *mutationResolver) StopSession(ctx context.Context) (*model.Session, error) {
-	if len(r.sessions) == 0 {
-		return nil, fmt.Errorf("no active session to stop")
-	}
-
-	lastSession := r.sessions[len(r.sessions)-1]
-
-	if lastSession.End != nil {
-		return nil, fmt.Errorf("last session already stopped")
-	}
-
-	endTime := time.Now()
-	startTime, err := time.Parse(time.RFC3339, lastSession.Start)
-	if err != nil {
-		return nil, fmt.Errorf("invalid start time: %v", err)
-	}
-
-	duration := int32(endTime.Sub(startTime).Minutes())
-	endTimeStr := endTime.Format(time.RFC3339)
-
-	lastSession.End = &endTimeStr
-	lastSession.DurationMinutes = &duration
-
-	return lastSession, nil
+	return r.Resolver.sessionService.StopSession()
 }
 
 // Focusarea is the resolver for the focusarea field.
 func (r *queryResolver) Focusarea(ctx context.Context) ([]*model.Focusarea, error) {
-	return r.focusareas, nil
+	return r.Resolver.focusareaService.GetAllFocusareas()
 }
 
 // Sessions is the resolver for the sessions field.
 func (r *queryResolver) Sessions(ctx context.Context) ([]*model.Session, error) {
-	return r.sessions, nil
+	return r.Resolver.sessionService.GetAllSessions()
 }
 
 // Mutation returns MutationResolver implementation.
