@@ -13,3 +13,11 @@ type Mutation struct {
 
 type Query struct {
 }
+
+type Session struct {
+	ID              string  `json:"id"`
+	FocusareaID     string  `json:"focusareaId"`
+	Start           string  `json:"start"`
+	End             *string `json:"end,omitempty"`
+	DurationMinutes *int32  `json:"durationMinutes,omitempty"`
+}

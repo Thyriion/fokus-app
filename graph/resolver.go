@@ -1,6 +1,6 @@
 package graph
 
-import "github.com/Thyriion/fokus-app/graph/model"
+import "fokus-app/graph/model"
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +8,5 @@ import "github.com/Thyriion/fokus-app/graph/model"
 
 type Resolver struct {
 	focusareas []*model.Focusarea
+	sessions   []*model.Session
 }

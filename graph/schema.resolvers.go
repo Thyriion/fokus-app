@@ -7,8 +7,8 @@ package graph
 import (
 	"context"
 	"fmt"
-
-	"github.com/Thyriion/fokus-app/graph/model"
+	"fokus-app/graph/model"
+	"time"
 )
 
 // CreateFocusarea is the resolver for the createFocusarea field.
@@ -23,9 +23,55 @@ func (r *mutationResolver) CreateFocusarea(ctx context.Context, name string, dea
 	return newFocusarea, nil
 }
 
+// StartSession is the resolver for the startSession field.
+func (r *mutationResolver) StartSession(ctx context.Context, focusareaID string) (*model.Session, error) {
+	newSession := &model.Session{
+		ID:              fmt.Sprintf("session-%d", len(r.sessions)+1),
+		FocusareaID:     focusareaID,
+		Start:           time.Now().Format(time.RFC3339),
+		End:             nil,
+		DurationMinutes: nil,
+	}
+
+	r.sessions = append(r.sessions, newSession)
+	return newSession, nil
+}
+
+// StopSession is the resolver for the stopSession field.
+func (r *mutationResolver) StopSession(ctx context.Context) (*model.Session, error) {
+	if len(r.sessions) == 0 {
+		return nil, fmt.Errorf("no active session to stop")
+	}
+
+	lastSession := r.sessions[len(r.sessions)-1]
+
+	if lastSession.End != nil {
+		return nil, fmt.Errorf("last session already stopped")
+	}
+
+	endTime := time.Now()
+	startTime, err := time.Parse(time.RFC3339, lastSession.Start)
+	if err != nil {
+		return nil, fmt.Errorf("invalid start time: %v", err)
+	}
+
+	duration := int32(endTime.Sub(startTime).Minutes())
+	endTimeStr := endTime.Format(time.RFC3339)
+
+	lastSession.End = &endTimeStr
+	lastSession.DurationMinutes = &duration
+
+	return lastSession, nil
+}
+
 // Focusarea is the resolver for the focusarea field.
 func (r *queryResolver) Focusarea(ctx context.Context) ([]*model.Focusarea, error) {
 	return r.focusareas, nil
+}
+
+// Sessions is the resolver for the sessions field.
+func (r *queryResolver) Sessions(ctx context.Context) ([]*model.Session, error) {
+	return r.sessions, nil
 }
 
 // Mutation returns MutationResolver implementation.
@@ -36,18 +82,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
-}
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
-}
-*/

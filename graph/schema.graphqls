@@ -4,10 +4,21 @@ type Focusarea {
   deadline: String
 }
 
+type Session {
+  id: ID!
+  focusareaId: ID!
+  start: String!
+  end: String
+  durationMinutes: Int
+}
+
 type Query {
   focusarea: [Focusarea!]!
+  sessions: [Session!]!
 }
 
 type Mutation {
   createFocusarea(name: String!, deadline: String): Focusarea!
+  startSession(focusareaId: ID!): Session!
+  stopSession: Session!
 }
